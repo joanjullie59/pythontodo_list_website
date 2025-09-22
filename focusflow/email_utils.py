@@ -24,7 +24,7 @@ def confirm_token(token, expiration=3600):
 
 def send_verification_email(user_email, token):
     try:
-        base_url = current_app.config.get('APP_BASE_URL', 'http://localhost:5000')
+        base_url = current_app.config.get('BASE_URL', 'http://localhost:5000')
         confirm_url = f'{base_url}{url_for("main.verify_email", token=token)}'
         html = render_template('activate.html', confirm_url=confirm_url)
         msg = Message(

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - FocusFlow{% endblock %}
+
+{% block content %}
+<div>
+    <h1 class="text-center mb-4">FocusFlow - Your Tasks</h1>
+
+    <!-- Introduction Section -->
+    <div class="intro-section mb-4 p-4 bg-light rounded">
+        <h2>Welcome, {{ current_user.username }}!</h2>
+        <p>FocusFlow is a powerful task management tool that helps you organize your tasks, set due dates, reminders,
+            and track your productivity efficiently.</p>
+        <p>Get started by adding your first task using the form below. Stay focused, manage your workflow, and never
+            miss a deadline!</p>
+    </div>
+
+    <!-- Add Task Form -->
+    <form method="POST" action="{{ url_for('main.index') }}" class="mb-4">
+        {{ form.hidden_tag() }}
+        <div class="form-group mb-3">
+            {{ form.content.label }}
+            {{ form.content(class="form-control") }}
+        </div>
+        <div class="form-group mb-3">
+            {{ form.category.label }}
+            {{ form.category(class="form-control") }}
+        </div>
+        <div class="form-group mb-3">
+            {{ form.due_date.label }}
+            {{ form.due_date(class="form-control") }}
+        </div>
+        <div class="form-check mb-3">
+            {{ form.reminder_active(class_="form-check-input") }}
+            {{ form.reminder_active.label(class="form-check-label") }}
+        </div>
+        <div class="form-group mb-3">
+            {{ form.reminder_time.label }}
+            {{ form.reminder_time(class="form-select") }}
+        </div>
+        <input type="submit" value="{{ form.submit.label.text or 'Add Task' }}" class="btn btn-primary" />
+    </form>
+
+    <!-- Task Table -->
+    {% if todos and todos|length > 0 %}
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">Task</th>
+            <th scope="col">Category</th>
+            <th scope="col">Due Date</th>
+            <th scope="col">Reminder</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+            <th scope="col">Done</th>  <!-- New Column for done checkbox -->
+        </tr>
+        </thead>
+        <tbody>
+        {% for task in todos %}
+        <tr>
+            <td>{{ task.content }}</td>
+            <td>{{ task.category.name if task.category else 'No Category' }}</td>
+            <td>{{ task.due_date.strftime('%Y-%m-%d %H:%M') if task.due_date else 'No Due Date' }}</td>
+            <td>
+                {% if task.reminder_active %}
+                <i class="bi bi-bell-fill" style="color: orange;" title="Reminder Active"></i>
+                {% else %}
+                <i class="bi bi-bell" style="color: grey;" title="No Reminder"></i>
+                {% endif %}
+            </td>
+            <td>{{ 'Completed' if task.completed else 'Pending' }}</td>
+            <td>
+                <a href="{{ url_for('main.update', task_id=task.id) }}" class="btn btn-sm btn-warning me-2">Update</a>
+                <form method="POST" action="{{ url_for('main.delete_task', task_id=task.id) }}" style="display:inline;">
+                    {{ form.hidden_tag() }}
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                </form>
+            </td>
+            <td>
+                <form method="POST" action="{{ url_for('main.complete_task', task_id=task.id) }}">
+                    {{ form.hidden_tag() }}
+                    <input type="checkbox" name="completed" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-center text-muted">No tasks yet. Add one above!</p>
+    {% endif %}
+</div>
+{% endblock %}

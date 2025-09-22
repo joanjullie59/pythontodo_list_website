@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask
 from focusflow.extensions import db, migrate, mail, login_manager, csrf, scheduler, start_scheduler
 from focusflow.routes import main
@@ -30,10 +31,11 @@ def create_app(config_class=None):
     # Register blueprint
     app.register_blueprint(main)
 
-    # Initialize Firebase Admin SDK if configured
-    firebase_cred_file = os.getenv('FIREBASE_SERVICE_ACCOUNT_FILE')
-    if firebase_cred_file and not firebase_admin._apps:
-        cred = credentials.Certificate(firebase_cred_file)
+    # Initialize Firebase Admin SDK if configured with environment variable
+    firebase_cred_json = os.getenv('FIREBASE_CREDENTIALS_JSON')
+    if firebase_cred_json and not firebase_admin._apps:
+        cred_dict = json.loads(firebase_cred_json)
+        cred = credentials.Certificate(cred_dict)
         firebase_admin.initialize_app(cred)
 
     # Start scheduler
